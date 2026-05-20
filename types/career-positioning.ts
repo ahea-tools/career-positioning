@@ -43,10 +43,27 @@ export type CareerPositioningInput = {
 
 export type CareerPositioningOutput = {
   careerPositioningSummary: string;
-  transferableValueMap: { experience: string; transferableValue: string; whereItApplies: string }[];
-  experienceReframe: { currentFraming: string; strongerPositioning: string; whyItWorks: string }[];
-  roleAndOpportunityFit: { potentialDirection: string; whyItFits: string; howToPositionExperience: string; gapOrCaution: string }[];
-  talkingPoints: { shortVersion: string; thirtySecondVersion: string; interviewReadyVersion: string };
+  transferableValueMap: {
+    experience: string;
+    transferableValue: string;
+    whereItApplies: string;
+  }[];
+  experienceReframe: {
+    currentFraming: string;
+    strongerPositioning: string;
+    whyItWorks: string;
+  }[];
+  roleAndOpportunityFit: {
+    potentialDirection: string;
+    whyItFits: string;
+    howToPositionExperience: string;
+    gapOrCaution: string;
+  }[];
+  talkingPoints: {
+    shortVersion: string;
+    thirtySecondVersion: string;
+    interviewReadyVersion: string;
+  };
   suggestedNextStep: string[];
 };
 

@@ -36,33 +36,46 @@ export function CareerPositioningTool() {
       try {
         const response = await fetch(`${backendUrl}/api/me`);
         const json = (await response.json().catch(() => ({}))) as BackendMeResponse;
-        if (mounted) setMe(json);
+        if (isMounted) {
+          setMe(json);
+        }
       } catch {
-        if (mounted) setServerMessage("We couldn’t refresh your access status right now.");
+        if (isMounted) {
+          setServerMessage("We couldn’t refresh your access status right now.");
+        }
       }
     };
+
     void fetchMe();
+
     return () => {
-      mounted = false;
+      isMounted = false;
     };
   }, []);
 
-  const setField = <K extends keyof CareerPositioningInput>(key: K, value: CareerPositioningInput[K]) => setInput((prev) => ({ ...prev, [key]: value }));
+  const setField = <K extends keyof CareerPositioningInput>(key: K, value: CareerPositioningInput[K]) => {
+    setInput((prev) => ({ ...prev, [key]: value }));
+  };
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setErrors({});
     setServerMessage("");
     const parsed = careerInputSchema.safeParse({ ...input, additionalContext: input.additionalContext || undefined });
+
     if (!parsed.success) {
       const nextErrors: Errors = { form: "Please review the highlighted fields before generating your positioning language." };
-      for (const issue of parsed.error.issues) nextErrors[issue.path[0] as keyof CareerPositioningInput] = issue.message;
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0] as keyof CareerPositioningInput;
+        nextErrors[field] = issue.message;
+      }
       setErrors(nextErrors);
       return;
     }
 
     setLoading(true);
     setResult(null);
+
     try {
       const response = await fetch(`${backendUrl}/api/generate`, {
         method: "POST",
@@ -70,11 +83,13 @@ export function CareerPositioningTool() {
         body: JSON.stringify({ toolId, input: parsed.data })
       });
       const payload = await response.json().catch(() => ({}));
+
       if (!response.ok) {
         setServerMessage(payload?.message ?? "We couldn’t generate your results just now. Please try again in a moment.");
         if (payload) setMe((prev) => ({ ...(prev ?? {}), ...payload }));
         return;
       }
+
       setResult(payload.output as CareerPositioningOutput);
       if (payload?.message) setServerMessage(payload.message as string);
       if (payload?.me) setMe(payload.me as BackendMeResponse);
