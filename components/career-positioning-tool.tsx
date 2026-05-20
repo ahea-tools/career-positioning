@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { careerInputSchema } from "@/lib/schema";
 import type { BackendMeResponse, CareerPositioningInput, CareerPositioningOutput } from "@/types/career-positioning";
 
@@ -27,29 +27,23 @@ export function CareerPositioningTool() {
   const [me, setMe] = useState<BackendMeResponse | null>(null);
   const [serverMessage, setServerMessage] = useState<string>("");
   const [copied, setCopied] = useState<string | null>(null);
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInLoading, setSignInLoading] = useState(false);
+  const [signInMessage, setSignInMessage] = useState<string>("");
+
+  const fetchMe = useCallback(async () => {
+    try {
+      const response = await fetch(`${backendUrl}/api/me`, { credentials: "include" });
+      const json = (await response.json().catch(() => ({}))) as BackendMeResponse;
+      setMe(json);
+    } catch {
+      setServerMessage("We couldn’t refresh your access status right now.");
+    }
+  }, []);
 
   useEffect(() => {
-    let isMounted = true;
-    const fetchMe = async () => {
-      try {
-        const response = await fetch(`${backendUrl}/api/me`);
-        const json = (await response.json().catch(() => ({}))) as BackendMeResponse;
-        if (isMounted) {
-          setMe(json);
-        }
-      } catch {
-        if (isMounted) {
-          setServerMessage("We couldn’t refresh your access status right now.");
-        }
-      }
-    };
-
     void fetchMe();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  }, [fetchMe]);
 
   const setField = <K extends keyof CareerPositioningInput>(key: K, value: CareerPositioningInput[K]) => {
     setInput((prev) => ({ ...prev, [key]: value }));
@@ -98,12 +92,47 @@ export function CareerPositioningTool() {
     }
   }
 
+
+  async function onSignIn() {
+    setSignInMessage("");
+
+    const email = signInEmail.trim();
+    if (!email) return;
+
+    setSignInLoading(true);
+
+    try {
+      const response = await fetch(`${backendUrl}/api/auth/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, toolId })
+      });
+
+      if (!response.ok) {
+        setSignInMessage("We couldn’t send a sign-in link just now. Please try again.");
+        return;
+      }
+
+      setSignInMessage("Check your email for a secure sign-in link.");
+      await fetchMe();
+    } catch {
+      setSignInMessage("We couldn’t send a sign-in link just now. Please try again.");
+    } finally {
+      setSignInLoading(false);
+    }
+  }
+
   const blocked = me?.accessState === "blocked";
   const generationsUsed = me?.generationsUsed ?? "—";
   const freeLimit = me?.freeGenerationsLimit ?? "—";
   const remaining = me?.remainingFreeGenerations ?? me?.freeGenerationsRemaining ?? "—";
   const accessStatus = me?.accessStatus ?? me?.status ?? me?.accessState ?? "—";
-  
+  const hasAuthSignal = typeof me?.isAuthenticated === "boolean" || typeof me?.authenticated === "boolean" || typeof me?.isVerified === "boolean" || typeof me?.verified === "boolean";
+  const authenticated = me?.isAuthenticated ?? me?.authenticated;
+  const verified = me?.isVerified ?? me?.verified;
+  const showSignIn = hasAuthSignal ? !(authenticated && verified) : true;
+
   async function copyCard(key: string, text: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -130,6 +159,25 @@ export function CareerPositioningTool() {
               <p className="mt-1">Generations used: {generationsUsed} • Free limit: {freeLimit} • Remaining free generations: {remaining} • Access status: {accessStatus}.</p>
             </div>
             {blocked && <p className="text-sm text-[#495A58]">Access is currently restricted by the AHEA shared backend.</p>}
+            {showSignIn && (
+              <div className="space-y-2 rounded border border-[#E5E3DC] bg-[#FAF9F6] p-3">
+                <label className="block text-sm font-medium text-[#303636]">Email
+                  <input
+                    type="email"
+                    required
+                    autoComplete="email"
+                    value={signInEmail}
+                    onChange={(e) => setSignInEmail(e.target.value)}
+                    className="mt-1 w-full rounded border border-[#E5E3DC] bg-[#FFFFFF] p-2"
+                    placeholder="you@example.org"
+                  />
+                </label>
+                <button type="button" onClick={() => void onSignIn()} disabled={signInLoading} className="rounded border border-[#D4967D] px-3 py-1.5 text-sm text-[#303636] disabled:opacity-50">
+                  {signInLoading ? "Sending…" : "Send sign-in link"}
+                </button>
+                {signInMessage && <p className="text-sm text-[#495A58]">{signInMessage}</p>}
+              </div>
+            )}
             {errors.form && <p role="alert" className="rounded border border-[#D4967D] bg-[#FAF9F6] p-3 text-sm text-red-700">{errors.form}</p>}
 
             <label className="block text-sm font-medium">What are you working on? *<select className="mt-1 w-full rounded border border-[#E5E3DC] bg-[#FFFFFF] p-2" value={input.outputType} onChange={(e) => setField("outputType", e.target.value as CareerPositioningInput["outputType"])}><option value="resume_summary">Resume summary</option><option value="linkedin_about">LinkedIn About section</option><option value="professional_bio">Professional bio</option><option value="interview_networking">Interview or networking language</option><option value="career_transition">Career transition language</option><option value="consulting_independent">Consulting or independent practice language</option></select></label>
