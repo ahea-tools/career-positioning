@@ -71,6 +71,7 @@ export function CareerPositioningTool() {
     try {
       const response = await fetch(`${backendUrl}/api/generate`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ toolId, input: parsed.data })
       });
