@@ -70,10 +70,16 @@ export type CareerPositioningOutput = {
 export type BackendMeResponse = {
   message?: string;
   status?: string;
-  freeGenerationsRemaining?: number;
-  isAuthenticated?: boolean;
-  isVerified?: boolean;
-  isMember?: boolean;
   accessState?: "allowed" | "blocked";
+  accessStatus?: string;
+  isAuthenticated?: boolean;
+  authenticated?: boolean;
+  isVerified?: boolean;
+  verified?: boolean;
+  isMember?: boolean;
+  generationsUsed?: number;
+  freeGenerationsLimit?: number;
+  remainingFreeGenerations?: number;
+  freeGenerationsRemaining?: number;
   paywallUrl?: string;
 };
