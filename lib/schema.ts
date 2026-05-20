@@ -54,3 +54,36 @@ export const careerInputSchema = z.object({
   ]),
   additionalContext: z.string().max(2000, "Please shorten this field to 2,000 characters or fewer.").optional()
 });
+
+
+export const careerOutputSchema = z.object({
+  careerPositioningSummary: z.string(),
+  transferableValueMap: z.array(
+    z.object({
+      experience: z.string(),
+      transferableValue: z.string(),
+      whereItApplies: z.string()
+    })
+  ),
+  experienceReframe: z.array(
+    z.object({
+      currentFraming: z.string(),
+      strongerPositioning: z.string(),
+      whyItWorks: z.string()
+    })
+  ),
+  roleAndOpportunityFit: z.array(
+    z.object({
+      potentialDirection: z.string(),
+      whyItFits: z.string(),
+      howToPositionExperience: z.string(),
+      gapOrCaution: z.string()
+    })
+  ),
+  talkingPoints: z.object({
+    shortVersion: z.string(),
+    thirtySecondVersion: z.string(),
+    interviewReadyVersion: z.string()
+  }),
+  suggestedNextStep: z.array(z.string())
+});

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { parseGenerateResponse } from "@/lib/generate-response";
 import { careerInputSchema } from "@/lib/schema";
 import type { BackendMeResponse, CareerPositioningInput, CareerPositioningOutput } from "@/types/career-positioning";
 
@@ -83,7 +84,17 @@ export function CareerPositioningTool() {
         return;
       }
 
-      setResult(payload.output as CareerPositioningOutput);
+      const parsedResponse = parseGenerateResponse(payload);
+      if (!parsedResponse.ok) {
+        setServerMessage(
+          parsedResponse.error === "missing_output"
+            ? "Generation finished, but the response was missing output. Please try again."
+            : "Generation succeeded but output format was invalid. Please try again."
+        );
+        return;
+      }
+
+      setResult(parsedResponse.output);
       if (payload?.message) setServerMessage(payload.message as string);
       if (payload?.me) setMe(payload.me as BackendMeResponse);
     } catch {
