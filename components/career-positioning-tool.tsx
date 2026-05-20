@@ -31,7 +31,7 @@ export function CareerPositioningTool() {
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+  let isMounted = true;
     const fetchMe = async () => {
       try {
         const response = await fetch(`${backendUrl}/api/me`);
