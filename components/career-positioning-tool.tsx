@@ -29,7 +29,7 @@ export function CareerPositioningTool() {
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
     const fetchMe = async () => {
       try {
         const response = await fetch(`${backendUrl}/api/me`);
@@ -103,9 +103,7 @@ export function CareerPositioningTool() {
   const freeLimit = me?.freeGenerationsLimit ?? "—";
   const remaining = me?.remainingFreeGenerations ?? me?.freeGenerationsRemaining ?? "—";
   const accessStatus = me?.accessStatus ?? me?.status ?? me?.accessState ?? "—";
-  const auth = me?.authenticated ?? me?.isAuthenticated;
-  const verified = me?.verified ?? me?.isVerified;
-
+  
   async function copyCard(key: string, text: string) {
     try {
       await navigator.clipboard.writeText(text);
