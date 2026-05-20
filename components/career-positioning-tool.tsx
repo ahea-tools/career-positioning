@@ -19,8 +19,6 @@ const initialInput: CareerPositioningInput = {
   additionalContext: ""
 };
 
-const card = "rounded-xl border border-[#495A58]/20 bg-white shadow-sm";
-
 export function CareerPositioningTool() {
   const [input, setInput] = useState(initialInput);
   const [errors, setErrors] = useState<Errors>({});
@@ -112,80 +110,78 @@ export function CareerPositioningTool() {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(key);
-      setTimeout(() => setCopied(null), 1500);
+      setTimeout(() => setCopied(null), 1200);
     } catch {
       setServerMessage("Copy is unavailable in this browser right now.");
     }
   }
 
   return (
-    <main className="min-h-screen bg-[#E5E3DC] text-[#303636]">
-      <div className="mx-auto max-w-6xl px-4 py-8 md:px-8">
-        <header className={`${card} mb-6 p-6 md:p-8`}>
-          <p className="font-ui text-sm text-[#495A58]">American Health Equity Association · AI Tools</p>
-          <h1 className="font-heading mt-3 text-3xl md:text-4xl">Career Positioning Tool</h1>
-          <p className="mt-4 max-w-4xl text-base md:text-lg">Reframe your experience and communicate your value for evolving roles, sectors, and opportunities in a rapidly changing public health and health equity landscape.</p>
+    <main className="min-h-screen bg-[#E5E3DC] px-6 py-10">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <header className="space-y-2 border-b border-[#D4967D] pb-4">
+          <p className="text-sm uppercase tracking-wide text-[#495A58]">American Health Equity Association</p>
+          <h1 className="text-3xl font-semibold">Career Positioning Tool</h1>
+          <p className="max-w-4xl text-[#495A58]">Reframe your experience and communicate your value for evolving roles, sectors, and opportunities in a rapidly changing public health and health equity landscape.</p>
         </header>
 
-        <section className={`${card} mb-6 p-5 md:p-6`}>
-          <h2 className="font-heading text-2xl">Access and usage</h2>
-          <p className="mt-2 text-sm text-[#303636]">{me?.message ?? "Please sign in or verify your email to use AHEA tools. Verified users receive two complimentary generations total across AHEA tools."}</p>
-          <p className="mt-2 font-ui text-sm text-[#495A58]">Generations used: {generationsUsed} • Free limit: {freeLimit} • Remaining free generations: {remaining} • Access status: {accessStatus}.</p>
-          {(auth === false || verified === false) && <p className="mt-2 text-sm">Please sign in or verify your email to continue.</p>}
-          {blocked && (
-            <div className="mt-4 rounded-lg border border-[#D4967D] bg-[#E5E3DC] p-4">
-              <p>{me?.message ?? "You’ve used your two complimentary AHEA tool generations. Membership unlocks continued access across all AHEA tools."}</p>
-              {me?.paywallUrl && <a className="mt-3 inline-block font-ui underline" href={me.paywallUrl}>Continue to membership options</a>}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <form onSubmit={onSubmit} className="space-y-4 rounded border border-[#E5E3DC] bg-[#FFFFFF] p-6">
+            <div className="rounded border border-[#E5E3DC] bg-[#FAF9F6] p-3 text-sm text-[#495A58]">
+              <p>{me?.message ?? "Please sign in or verify your email to use AHEA tools. Verified users receive two complimentary generations total across AHEA tools."}</p>
+              <p className="mt-1">Generations used: {generationsUsed} • Free limit: {freeLimit} • Remaining free generations: {remaining} • Access status: {accessStatus}.</p>
             </div>
-          )}
-        </section>
+            {blocked && <p className="text-sm text-[#495A58]">Access is currently restricted by the AHEA shared backend.</p>}
+            {errors.form && <p role="alert" className="rounded border border-[#D4967D] bg-[#FAF9F6] p-3 text-sm text-red-700">{errors.form}</p>}
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <form onSubmit={onSubmit} className={`${card} p-5 md:p-6`}>
-            {errors.form && <p role="alert" className="mb-4 rounded-md border border-[#D4967D] bg-[#E5E3DC] p-3 text-sm">{errors.form}</p>}
-            <div className="grid gap-4">
-              <label><span className="block">What are you working on? *</span><select className="mt-1 w-full rounded-md border border-[#495A58]/30 bg-white p-2" value={input.outputType} onChange={(e) => setField("outputType", e.target.value as CareerPositioningInput["outputType"])}><option value="resume_summary">Resume summary</option><option value="linkedin_about">LinkedIn About section</option><option value="professional_bio">Professional bio</option><option value="interview_networking">Interview or networking language</option><option value="career_transition">Career transition language</option><option value="consulting_independent">Consulting or independent practice language</option></select></label>
-              <label><span className="block">Paste your current language or rough notes *</span><textarea className="mt-1 min-h-40 w-full rounded-md border border-[#495A58]/30 bg-white p-2" value={input.currentLanguage} onChange={(e) => setField("currentLanguage", e.target.value)} />{errors.currentLanguage && <p className="text-sm text-red-700">{errors.currentLanguage}</p>}</label>
-              <label><span className="block">What best describes your current or recent work? *</span><select className="mt-1 w-full rounded-md border border-[#495A58]/30 bg-white p-2" value={input.currentWork} onChange={(e) => setField("currentWork", e.target.value as CareerPositioningInput["currentWork"])}><option value="public_health_programs">Public health programs</option><option value="health_equity_community_health">Health equity or community health</option><option value="research_data_evaluation">Research, data, or evaluation</option><option value="policy_advocacy_systems_change">Policy, advocacy, or systems change</option><option value="communications_strategy_public_affairs">Communications, strategy, or public affairs</option><option value="healthcare_population_health_social_care">Healthcare, population health, or social care</option><option value="nonprofit_philanthropy_community_based">Nonprofit, philanthropy, or community-based work</option><option value="other_mixed">Other or mixed background</option></select></label>
-              <label><span className="block">What are you trying to move toward? *</span><select className="mt-1 w-full rounded-md border border-[#495A58]/30 bg-white p-2" value={input.desiredDirection} onChange={(e) => setField("desiredDirection", e.target.value as CareerPositioningInput["desiredDirection"])}><option value="similar_field">A new role in a similar field</option><option value="different_sector">A role in a different sector</option><option value="leadership_role">A leadership role</option><option value="consulting_independent">Consulting or independent work</option><option value="broader_public_health_strategy_systems">Broader public health, strategy, or systems work</option><option value="not_sure">I’m not sure yet</option></select></label>
-              <fieldset><legend>What do you want the language to emphasize? *</legend>{([ ["leadership_decision_making","Leadership and decision-making"],["transferable_skills","Transferable skills"],["program_project_results","Program or project results"],["community_partnership_trust","Community partnership and trust-building"],["strategy_policy_systems","Strategy, policy, or systems thinking"],["communication_stakeholder_engagement","Communication and stakeholder engagement"],["adaptability_during_change","Adaptability during change"]] as const).map(([value, label]) => <label key={value} className="mt-2 flex items-center gap-2"><input type="checkbox" checked={input.emphasis.includes(value)} onChange={(e) => { const next = e.target.checked ? [...input.emphasis, value] : input.emphasis.filter((x) => x !== value); if (next.length <= 3) setField("emphasis", next as CareerPositioningInput["emphasis"]); }} />{label}</label>)}{errors.emphasis && <p className="text-sm text-red-700">{errors.emphasis}</p>}</fieldset>
-              <label><span className="block">What kind of professional context are you preparing for? *</span><select className="mt-1 w-full rounded-md border border-[#495A58]/30 bg-white p-2" value={input.professionalContext} onChange={(e) => setField("professionalContext", e.target.value as CareerPositioningInput["professionalContext"])}><option value="direct_values_forward">Direct and values-forward</option><option value="balanced_broadly_accessible">Balanced and broadly accessible</option><option value="careful_institutionally_appropriate">Careful and institutionally appropriate</option><option value="cross_sector_unfamiliar_audience">Cross-sector or unfamiliar audience</option><option value="recommend_best_fit">I’m not sure — recommend the best fit</option></select></label>
-              <label><span className="block">Anything to emphasize, avoid, or explain?</span><textarea className="mt-1 min-h-28 w-full rounded-md border border-[#495A58]/30 bg-white p-2" value={input.additionalContext} onChange={(e) => setField("additionalContext", e.target.value)} />{errors.additionalContext && <p className="text-sm text-red-700">{errors.additionalContext}</p>}</label>
-            </div>
-            <button disabled={loading || blocked} className="mt-6 rounded-md bg-[#D4967D] px-5 py-2 font-ui text-[#303636] disabled:opacity-60">{loading ? "Generating your career positioning language…" : "Generate career positioning language"}</button>
-            {serverMessage && <p className="mt-3 text-sm" role="status">{serverMessage}</p>}
+            <label className="block text-sm font-medium">What are you working on? *<select className="mt-1 w-full rounded border border-[#E5E3DC] bg-[#FFFFFF] p-2" value={input.outputType} onChange={(e) => setField("outputType", e.target.value as CareerPositioningInput["outputType"])}><option value="resume_summary">Resume summary</option><option value="linkedin_about">LinkedIn About section</option><option value="professional_bio">Professional bio</option><option value="interview_networking">Interview or networking language</option><option value="career_transition">Career transition language</option><option value="consulting_independent">Consulting or independent practice language</option></select></label>
+            <label className="block text-sm font-medium">Paste your current language or rough notes *<textarea className="mt-1 h-44 w-full rounded border border-[#E5E3DC] bg-[#FFFFFF] p-3" value={input.currentLanguage} onChange={(e) => setField("currentLanguage", e.target.value)} />{errors.currentLanguage && <p className="mt-1 text-sm text-red-700">{errors.currentLanguage}</p>}</label>
+            <label className="block text-sm font-medium">What best describes your current or recent work? *<select className="mt-1 w-full rounded border border-[#E5E3DC] bg-[#FFFFFF] p-2" value={input.currentWork} onChange={(e) => setField("currentWork", e.target.value as CareerPositioningInput["currentWork"])}><option value="public_health_programs">Public health programs</option><option value="health_equity_community_health">Health equity or community health</option><option value="research_data_evaluation">Research, data, or evaluation</option><option value="policy_advocacy_systems_change">Policy, advocacy, or systems change</option><option value="communications_strategy_public_affairs">Communications, strategy, or public affairs</option><option value="healthcare_population_health_social_care">Healthcare, population health, or social care</option><option value="nonprofit_philanthropy_community_based">Nonprofit, philanthropy, or community-based work</option><option value="other_mixed">Other or mixed background</option></select></label>
+            <label className="block text-sm font-medium">What are you trying to move toward? *<select className="mt-1 w-full rounded border border-[#E5E3DC] bg-[#FFFFFF] p-2" value={input.desiredDirection} onChange={(e) => setField("desiredDirection", e.target.value as CareerPositioningInput["desiredDirection"])}><option value="similar_field">A new role in a similar field</option><option value="different_sector">A role in a different sector</option><option value="leadership_role">A leadership role</option><option value="consulting_independent">Consulting or independent work</option><option value="broader_public_health_strategy_systems">Broader public health, strategy, or systems work</option><option value="not_sure">I’m not sure yet</option></select></label>
+            <fieldset><legend className="text-sm font-medium">What do you want the language to emphasize? *</legend>{([ ["leadership_decision_making","Leadership and decision-making"],["transferable_skills","Transferable skills"],["program_project_results","Program or project results"],["community_partnership_trust","Community partnership and trust-building"],["strategy_policy_systems","Strategy, policy, or systems thinking"],["communication_stakeholder_engagement","Communication and stakeholder engagement"],["adaptability_during_change","Adaptability during change"]] as const).map(([value, label]) => <label key={value} className="mt-2 flex items-center gap-2"><input type="checkbox" checked={input.emphasis.includes(value)} onChange={(e) => { const next = e.target.checked ? [...input.emphasis, value] : input.emphasis.filter((x) => x !== value); if (next.length <= 3) setField("emphasis", next as CareerPositioningInput["emphasis"]); }} />{label}</label>)}{errors.emphasis && <p className="mt-1 text-sm text-red-700">{errors.emphasis}</p>}</fieldset>
+            <label className="block text-sm font-medium">What kind of professional context are you preparing for? *<select className="mt-1 w-full rounded border border-[#E5E3DC] bg-[#FFFFFF] p-2" value={input.professionalContext} onChange={(e) => setField("professionalContext", e.target.value as CareerPositioningInput["professionalContext"])}><option value="direct_values_forward">Direct and values-forward</option><option value="balanced_broadly_accessible">Balanced and broadly accessible</option><option value="careful_institutionally_appropriate">Careful and institutionally appropriate</option><option value="cross_sector_unfamiliar_audience">Cross-sector or unfamiliar audience</option><option value="recommend_best_fit">I’m not sure — recommend the best fit</option></select></label>
+            <label className="block text-sm font-medium">Anything to emphasize, avoid, or explain?<textarea className="mt-1 h-32 w-full rounded border border-[#E5E3DC] bg-[#FFFFFF] p-3" value={input.additionalContext} onChange={(e) => setField("additionalContext", e.target.value)} />{errors.additionalContext && <p className="mt-1 text-sm text-red-700">{errors.additionalContext}</p>}</label>
+            <button disabled={loading || blocked} className="rounded bg-[#D4967D] px-4 py-2 text-[#303636] disabled:opacity-50">{loading ? "Generating your career positioning language…" : "Generate career positioning language"}</button>
+            {serverMessage && <p className="text-sm text-[#495A58]">{serverMessage}</p>}
           </form>
 
-          <aside className={`${card} h-fit p-5 md:p-6`}>
-            <h3 className="font-heading text-2xl">You will receive:</h3>
-            <ul className="mt-3 space-y-2">
-              <li>Career Positioning Summary</li>
-              <li>Transferable Value Map</li>
-              <li>Experience Reframe</li>
-              <li>Role and Opportunity Fit</li>
-              <li>Interview / Networking Talking Points</li>
-              <li>Suggested Next Step</li>
-            </ul>
-          </aside>
-        </section>
+          <div className="space-y-3">
+            {!result && <div className="rounded border border-[#E5E3DC] bg-[#FFFFFF] p-6 text-sm">You will receive: Career Positioning Summary, Transferable Value Map, Experience Reframe, Role and Opportunity Fit, Interview / Networking Talking Points, and Suggested Next Step.</div>}
+            {result && <div className="flex flex-wrap gap-2"><CopyPill label="Copy Summary" onClick={() => copyCard("summary", result.careerPositioningSummary)} copied={copied === "summary"} /><CopyPill label="Copy Full Output" onClick={() => copyCard("all", formatAll(result))} copied={copied === "all"} /></div>}
+            {result && (
+              <section className="space-y-5 rounded border border-[#E5E3DC] bg-[#FFFFFF] p-6">
+                <OutputSection title="Career Positioning Summary"><p className="whitespace-pre-wrap text-sm">{result.careerPositioningSummary}</p></OutputSection>
+                <OutputSection title="Transferable Value Map"><ul className="list-disc space-y-1 pl-5 text-sm">{result.transferableValueMap.map((x, i) => <li key={i}>{x.experience} → {x.transferableValue} ({x.whereItApplies})</li>)}</ul></OutputSection>
+                <OutputSection title="Experience Reframe"><ul className="list-disc space-y-1 pl-5 text-sm">{result.experienceReframe.map((x, i) => <li key={i}>{x.currentFraming} → {x.strongerPositioning} ({x.whyItWorks})</li>)}</ul></OutputSection>
+                <OutputSection title="Role and Opportunity Fit"><ul className="list-disc space-y-1 pl-5 text-sm">{result.roleAndOpportunityFit.map((x, i) => <li key={i}>{x.potentialDirection}: {x.whyItFits}</li>)}</ul></OutputSection>
+                <OutputSection title="Interview / Networking Talking Points"><p className="text-sm"><strong>Short version:</strong> {result.talkingPoints.shortVersion}</p><p className="mt-2 text-sm"><strong>30-second version:</strong> {result.talkingPoints.thirtySecondVersion}</p><p className="mt-2 text-sm"><strong>Interview-ready version:</strong> {result.talkingPoints.interviewReadyVersion}</p></OutputSection>
+                <OutputSection title="Suggested Next Step"><ul className="list-disc pl-5 text-sm">{result.suggestedNextStep.slice(0, 3).map((item, i) => <li key={i}>{item}</li>)}</ul></OutputSection>
+              </section>
+            )}
+          </div>
+        </div>
 
-        {result && (
-          <section className="mt-6 grid gap-4">
-            <OutputCard title="Career Positioning Summary" copied={copied === "summary"} onCopy={() => copyCard("summary", result.careerPositioningSummary)}>{result.careerPositioningSummary}</OutputCard>
-            <OutputCard title="Transferable Value Map" copied={copied === "value"} onCopy={() => copyCard("value", result.transferableValueMap.map((x) => `Your Experience: ${x.experience}\nTransferable Value: ${x.transferableValue}\nWhere It Applies: ${x.whereItApplies}`).join("\n\n"))}>{result.transferableValueMap.map((x, i) => <div key={i} className="mb-3 rounded border p-3"><p><strong>Your Experience:</strong> {x.experience}</p><p><strong>Transferable Value:</strong> {x.transferableValue}</p><p><strong>Where It Applies:</strong> {x.whereItApplies}</p></div>)}</OutputCard>
-            <OutputCard title="Experience Reframe" copied={copied === "reframe"} onCopy={() => copyCard("reframe", result.experienceReframe.map((x) => `Current Framing: ${x.currentFraming}\nStronger Positioning: ${x.strongerPositioning}\nWhy It Works: ${x.whyItWorks}`).join("\n\n"))}>{result.experienceReframe.map((x, i) => <div key={i} className="mb-3 rounded border p-3"><p><strong>Current Framing:</strong> {x.currentFraming}</p><p><strong>Stronger Positioning:</strong> {x.strongerPositioning}</p><p><strong>Why It Works:</strong> {x.whyItWorks}</p></div>)}</OutputCard>
-            <OutputCard title="Role and Opportunity Fit" copied={copied === "fit"} onCopy={() => copyCard("fit", result.roleAndOpportunityFit.map((x) => `Potential direction: ${x.potentialDirection}\nWhy it fits: ${x.whyItFits}\nHow to position your experience: ${x.howToPositionExperience}\nGap or caution: ${x.gapOrCaution}`).join("\n\n"))}>{result.roleAndOpportunityFit.map((x, i) => <div key={i} className="mb-3 rounded border p-3"><p><strong>Potential direction:</strong> {x.potentialDirection}</p><p><strong>Why it fits:</strong> {x.whyItFits}</p><p><strong>How to position your experience:</strong> {x.howToPositionExperience}</p><p><strong>Gap or caution:</strong> {x.gapOrCaution}</p></div>)}</OutputCard>
-            <OutputCard title="Interview / Networking Talking Points" copied={copied === "talking"} onCopy={() => copyCard("talking", `Short version: ${result.talkingPoints.shortVersion}\n\n30-second version: ${result.talkingPoints.thirtySecondVersion}\n\nInterview-ready version: ${result.talkingPoints.interviewReadyVersion}`)}><p><strong>Short version:</strong> {result.talkingPoints.shortVersion}</p><p><strong>30-second version:</strong> {result.talkingPoints.thirtySecondVersion}</p><p><strong>Interview-ready version:</strong> {result.talkingPoints.interviewReadyVersion}</p></OutputCard>
-            <OutputCard title="Suggested Next Step" copied={copied === "next"} onCopy={() => copyCard("next", result.suggestedNextStep.join("\n"))}><ul>{result.suggestedNextStep.slice(0, 3).map((item, i) => <li key={i}>• {item}</li>)}</ul></OutputCard>
-          </section>
-        )}
-
-        <footer className="py-8 text-center"><a className="font-ui underline" href="https://www.americanhealthequity.org/tools">Return to AHEA tools</a></footer>
+        <footer className="text-xs text-[#495A58]"><a className="underline" href="https://www.americanhealthequity.org/tools">Return to AHEA tools</a></footer>
       </div>
     </main>
   );
 }
 
-function OutputCard({ title, children, onCopy, copied }: { title: string; children: React.ReactNode; onCopy: () => void; copied: boolean }) {
-  return <article className={`${card} p-5`}><div className="mb-3 flex items-center justify-between gap-3"><h3 className="font-heading text-2xl">{title}</h3><button onClick={onCopy} className="rounded-md border border-[#495A58]/40 px-3 py-1 font-ui" aria-label={`Copy ${title}`}>{copied ? "Copied" : "Copy"}</button></div><div className="space-y-3">{children}</div></article>;
+function CopyPill({ label, onClick, copied }: { label: string; onClick: () => void; copied: boolean }) {
+  return <button type="button" onClick={onClick} className="rounded border border-[#E5E3DC] bg-[#FFFFFF] px-3 py-1.5 text-sm hover:bg-[#E5E3DC]">{copied ? "Copied" : label}</button>;
+}
+
+function OutputSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return <section><h3 className="font-semibold">{title}</h3><div className="mt-2">{children}</div></section>;
+}
+
+function formatAll(output: CareerPositioningOutput): string {
+  return [
+    `Career Positioning Summary\n${output.careerPositioningSummary}`,
+    `Transferable Value Map\n${output.transferableValueMap.map((x) => `- ${x.experience} | ${x.transferableValue} | ${x.whereItApplies}`).join("\n")}`,
+    `Experience Reframe\n${output.experienceReframe.map((x) => `- ${x.currentFraming} | ${x.strongerPositioning} | ${x.whyItWorks}`).join("\n")}`,
+    `Role and Opportunity Fit\n${output.roleAndOpportunityFit.map((x) => `- ${x.potentialDirection} | ${x.whyItFits} | ${x.howToPositionExperience} | ${x.gapOrCaution}`).join("\n")}`,
+    `Interview / Networking Talking Points\nShort version: ${output.talkingPoints.shortVersion}\n30-second version: ${output.talkingPoints.thirtySecondVersion}\nInterview-ready version: ${output.talkingPoints.interviewReadyVersion}`,
+    `Suggested Next Step\n${output.suggestedNextStep.map((x) => `- ${x}`).join("\n")}`
+  ].join("\n\n");
 }
