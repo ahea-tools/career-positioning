@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { parseGenerateResponse } from "@/lib/generate-response";
+import { mergeMeWithUsage, normalizeUsageState } from "@/lib/usage-state";
 import { careerInputSchema } from "@/lib/schema";
 import type { BackendMeResponse, CareerPositioningInput, CareerPositioningOutput } from "@/types/career-positioning";
 
@@ -36,7 +37,7 @@ export function CareerPositioningTool() {
     try {
       const response = await fetch(`${backendUrl}/api/me`, { credentials: "include" });
       const json = (await response.json().catch(() => ({}))) as BackendMeResponse;
-      setMe(json);
+      setMe((prev) => mergeMeWithUsage(json, normalizeUsageState(json)) ?? prev);
     } catch {
       setServerMessage("We couldn’t refresh your access status right now.");
     }
@@ -78,9 +79,11 @@ export function CareerPositioningTool() {
       });
       const payload = await response.json().catch(() => ({}));
 
+      const normalized = normalizeUsageState(payload);
+      setMe((prev) => mergeMeWithUsage(prev, normalized));
+
       if (!response.ok) {
-        setServerMessage(payload?.message ?? "We couldn’t generate your results just now. Please try again in a moment.");
-        if (payload) setMe((prev) => ({ ...(prev ?? {}), ...payload }));
+        setServerMessage(normalized.message ?? "We couldn’t generate your results just now. Please try again in a moment.");
         return;
       }
 
@@ -95,12 +98,13 @@ export function CareerPositioningTool() {
       }
 
       setResult(parsedResponse.output);
-      if (payload?.message) setServerMessage(payload.message as string);
-      if (payload?.me) setMe(payload.me as BackendMeResponse);
+      if (normalized.message) setServerMessage(normalized.message);
+      if (payload?.me) setMe((prev) => mergeMeWithUsage(payload.me as BackendMeResponse, normalizeUsageState(payload.me)) ?? prev);
     } catch {
       setServerMessage("We couldn’t generate your results just now. Please try again in a moment.");
     } finally {
       setLoading(false);
+      await fetchMe();
     }
   }
 
@@ -135,7 +139,7 @@ export function CareerPositioningTool() {
     }
   }
 
-  const blocked = me?.accessState === "blocked";
+  const blocked = me?.accessState === "blocked" || me?.accessStatus === "blocked";
   const generationsUsed = me?.generationsUsed ?? "—";
   const freeLimit = me?.freeGenerationsLimit ?? "—";
   const remaining = me?.remainingFreeGenerations ?? me?.freeGenerationsRemaining ?? "—";
@@ -199,7 +203,7 @@ export function CareerPositioningTool() {
             <fieldset><legend className="text-sm font-medium">What do you want the language to emphasize? *</legend>{([ ["leadership_decision_making","Leadership and decision-making"],["transferable_skills","Transferable skills"],["program_project_results","Program or project results"],["community_partnership_trust","Community partnership and trust-building"],["strategy_policy_systems","Strategy, policy, or systems thinking"],["communication_stakeholder_engagement","Communication and stakeholder engagement"],["adaptability_during_change","Adaptability during change"]] as const).map(([value, label]) => <label key={value} className="mt-2 flex items-center gap-2"><input type="checkbox" checked={input.emphasis.includes(value)} onChange={(e) => { const next = e.target.checked ? [...input.emphasis, value] : input.emphasis.filter((x) => x !== value); if (next.length <= 3) setField("emphasis", next as CareerPositioningInput["emphasis"]); }} />{label}</label>)}{errors.emphasis && <p className="mt-1 text-sm text-red-700">{errors.emphasis}</p>}</fieldset>
             <label className="block text-sm font-medium">What kind of professional context are you preparing for? *<select className="mt-1 w-full rounded border border-[#E5E3DC] bg-[#FFFFFF] p-2" value={input.professionalContext} onChange={(e) => setField("professionalContext", e.target.value as CareerPositioningInput["professionalContext"])}><option value="direct_values_forward">Direct and values-forward</option><option value="balanced_broadly_accessible">Balanced and broadly accessible</option><option value="careful_institutionally_appropriate">Careful and institutionally appropriate</option><option value="cross_sector_unfamiliar_audience">Cross-sector or unfamiliar audience</option><option value="recommend_best_fit">I’m not sure — recommend the best fit</option></select></label>
             <label className="block text-sm font-medium">Anything to emphasize, avoid, or explain?<textarea className="mt-1 h-32 w-full rounded border border-[#E5E3DC] bg-[#FFFFFF] p-3" value={input.additionalContext} onChange={(e) => setField("additionalContext", e.target.value)} />{errors.additionalContext && <p className="mt-1 text-sm text-red-700">{errors.additionalContext}</p>}</label>
-            <button disabled={loading || blocked} className="rounded bg-[#D4967D] px-4 py-2 text-[#303636] disabled:opacity-50">{loading ? "Generating your career positioning language…" : "Generate career positioning language"}</button>
+            <button disabled={loading} className="rounded bg-[#D4967D] px-4 py-2 text-[#303636] disabled:opacity-50">{loading ? "Generating your career positioning language…" : "Generate career positioning language"}</button>
             {serverMessage && <p className="text-sm text-[#495A58]">{serverMessage}</p>}
           </form>
 
