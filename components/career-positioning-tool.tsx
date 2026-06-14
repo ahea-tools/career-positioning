@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { parseGenerateResponse } from "@/lib/generate-response";
 import { mergeMeWithUsage, normalizeUsageState } from "@/lib/usage-state";
 import { careerInputSchema } from "@/lib/schema";
+import { ToolHubLink } from "@/components/tool-hub-link";
 import type { BackendMeResponse, CareerPositioningInput, CareerPositioningOutput } from "@/types/career-positioning";
 
 type Errors = Partial<Record<keyof CareerPositioningInput, string>> & { form?: string };
@@ -223,7 +224,7 @@ export function CareerPositioningTool() {
           </div>
         </div>
 
-        <footer className="text-xs text-[#495A58]"><a className="underline" href="https://www.americanhealthequity.org/tools">Return to AHEA tools</a></footer>
+        <ToolHubLink />
       </div>
     </main>
   );
